@@ -9,16 +9,15 @@ export async function PATCH(
   const body = await request.json();
 
   const data: Record<string, unknown> = {};
-  if (body.paid !== undefined) data.paid = body.paid;
+  if (body.source !== undefined) data.source = body.source;
   if (body.amount !== undefined) data.amount = body.amount;
-  if (body.name !== undefined) data.name = body.name;
 
-  const obligation = await prisma.obligation.update({
+  const income = await prisma.income.update({
     where: { id },
     data,
   });
 
-  return NextResponse.json(obligation);
+  return NextResponse.json(income);
 }
 
 export async function DELETE(
@@ -26,6 +25,6 @@ export async function DELETE(
   { params }: { params: Promise<{ month: string; id: string }> }
 ) {
   const { id } = await params;
-  await prisma.obligation.delete({ where: { id } });
+  await prisma.income.delete({ where: { id } });
   return NextResponse.json({ deleted: true });
 }

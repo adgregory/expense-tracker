@@ -5,9 +5,10 @@ import { useApp } from "@/lib/context/use-app";
 import { formatCOP, cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 
 export function ObligationsSection() {
-  const { budget, addObligation, toggleObligationPaid } = useApp();
+  const { budget, addObligation, deleteObligation, toggleObligationPaid } = useApp();
   const [showAdd, setShowAdd] = useState(false);
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
@@ -15,10 +16,10 @@ export function ObligationsSection() {
 
   if (!budget) return null;
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     const num = parseInt(amount.replace(/\D/g, ""), 10);
     if (!name.trim() || !num) return;
-    addObligation({ name: name.trim(), amount: num, dueDate: new Date().toISOString().split("T")[0], recurring: isRecurring });
+    await addObligation({ name: name.trim(), amount: num, dueDate: new Date().toISOString().split("T")[0], recurring: isRecurring });
     setName("");
     setAmount("");
     setShowAdd(false);
@@ -29,8 +30,8 @@ export function ObligationsSection() {
       <p className="text-[11px] text-muted-foreground uppercase tracking-wider mb-2.5">Obligations / Fixed Costs</p>
       <div className="space-y-2">
         {budget.obligations.map((ob) => (
-          <div key={ob.id} className="flex justify-between items-center p-3.5 rounded-xl border border-border bg-card cursor-pointer" onClick={() => toggleObligationPaid(ob.id)}>
-            <div>
+          <div key={ob.id} className="flex items-center gap-2 p-3.5 rounded-xl border border-border bg-card">
+            <div className="flex-1 cursor-pointer" onClick={() => toggleObligationPaid(ob.id)}>
               <p className="text-[13px] font-medium">{ob.name}</p>
               <p className="text-[10px] text-muted-foreground">
                 {ob.paid ? "✓ Paid" : `Due ${ob.dueDate.split("-").slice(1).reverse().join("/")}`}
@@ -38,6 +39,9 @@ export function ObligationsSection() {
               </p>
             </div>
             <span className={`text-sm font-semibold ${ob.paid ? "text-muted-foreground line-through" : "text-[var(--color-red)]"}`}>-{formatCOP(ob.amount)}</span>
+            <button onClick={() => deleteObligation(ob.id)} className="text-muted-foreground hover:text-[var(--color-red)] p-1">
+              <X className="h-3.5 w-3.5" />
+            </button>
           </div>
         ))}
       </div>

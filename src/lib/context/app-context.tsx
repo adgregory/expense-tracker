@@ -25,7 +25,10 @@ export interface AppState {
   addCategory: (name: string, icon: string, color: string) => Promise<void>;
   updateSpendingLimit: (amount: number) => Promise<void>;
   addIncome: (income: Omit<Income, "id">) => Promise<void>;
+  editIncome: (id: string, updates: { source?: string; amount?: number }) => Promise<void>;
+  deleteIncome: (id: string) => Promise<void>;
   addObligation: (obligation: Omit<Obligation, "id" | "paid">) => Promise<void>;
+  deleteObligation: (id: string) => Promise<void>;
   toggleObligationPaid: (id: string) => Promise<void>;
   addInvestmentTransaction: (
     investmentId: string,
@@ -114,12 +117,34 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setBudget(await res.json());
   }, [currentMonth]);
 
+  const editIncome = useCallback(async (id: string, updates: { source?: string; amount?: number }) => {
+    await fetch(`/api/budget/${currentMonth}/income/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updates),
+    });
+    const res = await fetch(`/api/budget/${currentMonth}`);
+    setBudget(await res.json());
+  }, [currentMonth]);
+
+  const deleteIncome = useCallback(async (id: string) => {
+    await fetch(`/api/budget/${currentMonth}/income/${id}`, { method: "DELETE" });
+    const res = await fetch(`/api/budget/${currentMonth}`);
+    setBudget(await res.json());
+  }, [currentMonth]);
+
   const addObligation = useCallback(async (obligation: Omit<Obligation, "id" | "paid">) => {
     await fetch(`/api/budget/${currentMonth}/obligation`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(obligation),
     });
+    const res = await fetch(`/api/budget/${currentMonth}`);
+    setBudget(await res.json());
+  }, [currentMonth]);
+
+  const deleteObligation = useCallback(async (id: string) => {
+    await fetch(`/api/budget/${currentMonth}/obligation/${id}`, { method: "DELETE" });
     const res = await fetch(`/api/budget/${currentMonth}`);
     setBudget(await res.json());
   }, [currentMonth]);
@@ -194,7 +219,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       expenses, categories, budget, investments, recurring,
       currentMonth, loading, setCurrentMonth,
       categorizeExpense, addCategory, updateSpendingLimit,
-      addIncome, addObligation, toggleObligationPaid,
+      addIncome, editIncome, deleteIncome, addObligation, deleteObligation, toggleObligationPaid,
       addInvestmentTransaction, addExpense, updateExpense, editCategory, deleteRecurring, refreshData,
     }}>
       {children}
