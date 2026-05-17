@@ -31,6 +31,7 @@ export interface AppState {
     investmentId: string,
     transaction: { type: "buy" | "sell"; quantity: number; pricePerUnit: number; date: string; notes?: string }
   ) => Promise<void>;
+  updateExpense: (id: string, updates: { categoryId?: string; amount?: number; merchantName?: string; isRecurring?: boolean; remember?: boolean }) => Promise<void>;
   editCategory: (id: string, updates: { name?: string; icon?: string; color?: string }) => Promise<void>;
   deleteRecurring: (monthEntryId: string) => Promise<void>;
   refreshData: () => Promise<void>;
@@ -147,6 +148,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setInvestments(await res.json());
   }, []);
 
+  const updateExpense = useCallback(async (
+    id: string,
+    updates: { categoryId?: string; amount?: number; merchantName?: string; isRecurring?: boolean; remember?: boolean }
+  ) => {
+    const res = await fetch(`/api/expenses/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updates),
+    });
+    const updated = await res.json();
+    setExpenses((prev) => prev.map((e) => (e.id === id ? updated : e)));
+  }, []);
+
   const editCategory = useCallback(async (id: string, updates: { name?: string; icon?: string; color?: string }) => {
     const res = await fetch(`/api/categories/${id}`, {
       method: "PATCH",
@@ -168,7 +182,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       currentMonth, loading, setCurrentMonth,
       categorizeExpense, addCategory, updateSpendingLimit,
       addIncome, addObligation, toggleObligationPaid,
-      addInvestmentTransaction, editCategory, deleteRecurring, refreshData,
+      addInvestmentTransaction, updateExpense, editCategory, deleteRecurring, refreshData,
     }}>
       {children}
     </AppContext.Provider>

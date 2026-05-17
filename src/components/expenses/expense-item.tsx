@@ -32,8 +32,8 @@ export function ExpenseItem({ expense, onCategorize }: ExpenseItemProps) {
 
   return (
     <div
-      className={`flex items-center gap-3 py-3.5 border-b border-border/50 last:border-0 ${isUncategorized ? "cursor-pointer" : ""}`}
-      onClick={() => isUncategorized && onCategorize?.(expense)}
+      className="flex items-center gap-3 py-3.5 border-b border-border/50 last:border-0 cursor-pointer"
+      onClick={() => onCategorize?.(expense)}
     >
       <div className={`flex h-10 w-10 items-center justify-center rounded-[10px] text-lg flex-shrink-0 ${colorMap[color]}`}>{icon}</div>
       <div className="flex-1 min-w-0">

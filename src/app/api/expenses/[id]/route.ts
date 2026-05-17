@@ -7,14 +7,17 @@ export async function PATCH(
 ) {
   const { id } = await params;
   const body = await request.json();
-  const { categoryId, remember, isRecurring } = body;
+  const { categoryId, remember, isRecurring, amount, merchantName } = body;
+
+  const data: Record<string, unknown> = {};
+  if (categoryId !== undefined) data.categoryId = categoryId;
+  if (isRecurring !== undefined) data.isRecurring = isRecurring;
+  if (amount !== undefined) data.amount = amount;
+  if (merchantName !== undefined) data.merchantName = merchantName;
 
   const expense = await prisma.expense.update({
     where: { id },
-    data: {
-      categoryId,
-      isRecurring: isRecurring ?? false,
-    },
+    data,
     include: { category: true },
   });
 
