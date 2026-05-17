@@ -7,12 +7,15 @@ import { SearchBar } from "@/components/expenses/search-bar";
 import { FilterPills } from "@/components/expenses/filter-pills";
 import { ExpenseList } from "@/components/expenses/expense-list";
 import { CategorizeSheet } from "@/components/expenses/categorize-sheet";
+import { ManageCategoriesSheet } from "@/components/expenses/manage-categories-sheet";
+import { Settings } from "lucide-react";
 
 export default function ExpensesPage() {
   const { expenses, loading } = useApp();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [categorizeTarget, setCategorizeTarget] = useState<Expense | null>(null);
+  const [showManage, setShowManage] = useState(false);
 
   const filtered = useMemo(() => {
     let result = expenses;
@@ -33,13 +36,19 @@ export default function ExpensesPage() {
   return (
     <div className="px-5 py-4 max-w-2xl mx-auto">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-[22px] font-bold tracking-tight">Expenses</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-[22px] font-bold tracking-tight">Expenses</h1>
+          <button onClick={() => setShowManage(true)} className="text-muted-foreground hover:text-foreground">
+            <Settings className="h-4 w-4" />
+          </button>
+        </div>
         <span className="text-[13px] text-muted-foreground">Mayo 2026</span>
       </div>
       <div className="mb-3"><SearchBar value={search} onChange={setSearch} /></div>
       <FilterPills selected={filter} onSelect={setFilter} />
       <ExpenseList expenses={filtered} onCategorize={setCategorizeTarget} />
       <CategorizeSheet expense={categorizeTarget} open={categorizeTarget !== null} onClose={() => setCategorizeTarget(null)} />
+      <ManageCategoriesSheet open={showManage} onClose={() => setShowManage(false)} />
     </div>
   );
 }

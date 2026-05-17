@@ -31,6 +31,8 @@ export interface AppState {
     investmentId: string,
     transaction: { type: "buy" | "sell"; quantity: number; pricePerUnit: number; date: string; notes?: string }
   ) => Promise<void>;
+  editCategory: (id: string, updates: { name?: string; icon?: string; color?: string }) => Promise<void>;
+  deleteRecurring: (monthEntryId: string) => Promise<void>;
   refreshData: () => Promise<void>;
 }
 
@@ -145,13 +147,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setInvestments(await res.json());
   }, []);
 
+  const editCategory = useCallback(async (id: string, updates: { name?: string; icon?: string; color?: string }) => {
+    const res = await fetch(`/api/categories/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updates),
+    });
+    const updated = await res.json();
+    setCategories((prev) => prev.map((c) => (c.id === id ? updated : c)));
+  }, []);
+
+  const deleteRecurring = useCallback(async (monthEntryId: string) => {
+    await fetch(`/api/recurring/${monthEntryId}`, { method: "DELETE" });
+    setRecurring((prev) => prev.filter((r) => !r.months.some((m) => m.id === monthEntryId)));
+  }, []);
+
   return (
     <AppContext.Provider value={{
       expenses, categories, budget, investments, recurring,
       currentMonth, loading, setCurrentMonth,
       categorizeExpense, addCategory, updateSpendingLimit,
       addIncome, addObligation, toggleObligationPaid,
-      addInvestmentTransaction, refreshData,
+      addInvestmentTransaction, editCategory, deleteRecurring, refreshData,
     }}>
       {children}
     </AppContext.Provider>

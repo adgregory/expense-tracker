@@ -2,6 +2,7 @@
 
 import { useApp } from "@/lib/context/use-app";
 import { formatCOP, cn } from "@/lib/utils";
+import { X, PauseCircle } from "lucide-react";
 
 const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
   arrived: { label: "Arrived", color: "text-[var(--color-green)]", bg: "bg-[var(--color-green-dim)]" },
@@ -11,7 +12,7 @@ const statusConfig: Record<string, { label: string; color: string; bg: string }>
 };
 
 export function RecurringSection() {
-  const { recurring } = useApp();
+  const { recurring, deleteRecurring, refreshData } = useApp();
 
   if (recurring.length === 0) return null;
 
@@ -48,6 +49,31 @@ export function RecurringSection() {
                 <span className={cn("text-[9px] font-semibold uppercase px-2 py-0.5 rounded-full", config.color, config.bg)}>
                   {config.label}
                 </span>
+                {status === "pending" && monthData && (
+                  <button
+                    onClick={async () => {
+                      await fetch(`/api/recurring/${monthData.id}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ status: "snoozed" }),
+                      });
+                      await refreshData();
+                    }}
+                    className="text-muted-foreground hover:text-foreground p-1"
+                    title="Snooze"
+                  >
+                    <PauseCircle className="h-3.5 w-3.5" />
+                  </button>
+                )}
+                {monthData && (
+                  <button
+                    onClick={() => deleteRecurring(monthData.id)}
+                    className="text-muted-foreground hover:text-[var(--color-red)] p-1"
+                    title="Remove"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
               </div>
             </div>
           );
