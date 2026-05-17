@@ -31,6 +31,7 @@ export interface AppState {
     investmentId: string,
     transaction: { type: "buy" | "sell"; quantity: number; pricePerUnit: number; date: string; notes?: string }
   ) => Promise<void>;
+  addExpense: (expense: { merchantName: string; amount: number; categoryId?: string; date?: string }) => Promise<void>;
   updateExpense: (id: string, updates: { categoryId?: string; amount?: number; merchantName?: string; isRecurring?: boolean; remember?: boolean }) => Promise<void>;
   editCategory: (id: string, updates: { name?: string; icon?: string; color?: string }) => Promise<void>;
   deleteRecurring: (monthEntryId: string) => Promise<void>;
@@ -148,6 +149,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setInvestments(await res.json());
   }, []);
 
+  const addExpense = useCallback(async (
+    data: { merchantName: string; amount: number; categoryId?: string; date?: string }
+  ) => {
+    const res = await fetch("/api/expenses", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    const created = await res.json();
+    setExpenses((prev) => [created, ...prev]);
+  }, []);
+
   const updateExpense = useCallback(async (
     id: string,
     updates: { categoryId?: string; amount?: number; merchantName?: string; isRecurring?: boolean; remember?: boolean }
@@ -182,7 +195,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       currentMonth, loading, setCurrentMonth,
       categorizeExpense, addCategory, updateSpendingLimit,
       addIncome, addObligation, toggleObligationPaid,
-      addInvestmentTransaction, updateExpense, editCategory, deleteRecurring, refreshData,
+      addInvestmentTransaction, addExpense, updateExpense, editCategory, deleteRecurring, refreshData,
     }}>
       {children}
     </AppContext.Provider>

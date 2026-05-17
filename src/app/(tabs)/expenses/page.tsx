@@ -8,7 +8,8 @@ import { FilterPills } from "@/components/expenses/filter-pills";
 import { ExpenseList } from "@/components/expenses/expense-list";
 import { CategorizeSheet } from "@/components/expenses/categorize-sheet";
 import { ManageCategoriesSheet } from "@/components/expenses/manage-categories-sheet";
-import { Settings } from "lucide-react";
+import { AddExpenseSheet } from "@/components/expenses/add-expense-sheet";
+import { Settings, Plus } from "lucide-react";
 
 export default function ExpensesPage() {
   const { expenses, loading } = useApp();
@@ -16,6 +17,7 @@ export default function ExpensesPage() {
   const [filter, setFilter] = useState("all");
   const [categorizeTarget, setCategorizeTarget] = useState<Expense | null>(null);
   const [showManage, setShowManage] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
 
   const filtered = useMemo(() => {
     let result = expenses;
@@ -42,12 +44,18 @@ export default function ExpensesPage() {
             <Settings className="h-4 w-4" />
           </button>
         </div>
-        <span className="text-[13px] text-muted-foreground">Mayo 2026</span>
+        <button
+          onClick={() => setShowAdd(true)}
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-green)] text-black"
+        >
+          <Plus className="h-4 w-4" />
+        </button>
       </div>
       <div className="mb-3"><SearchBar value={search} onChange={setSearch} /></div>
       <FilterPills selected={filter} onSelect={setFilter} />
       <ExpenseList expenses={filtered} onCategorize={setCategorizeTarget} />
       <CategorizeSheet expense={categorizeTarget} open={categorizeTarget !== null} onClose={() => setCategorizeTarget(null)} />
+      <AddExpenseSheet open={showAdd} onClose={() => setShowAdd(false)} />
       <ManageCategoriesSheet open={showManage} onClose={() => setShowManage(false)} />
     </div>
   );
