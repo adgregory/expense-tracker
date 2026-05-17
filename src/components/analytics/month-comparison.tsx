@@ -33,7 +33,7 @@ export function MonthComparison() {
           <BarChart data={data} margin={{ top: 5, right: 5, bottom: 0, left: 0 }}>
             <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 14 }} />
             <YAxis hide />
-            <Tooltip contentStyle={{ background: "#1a1a2e", border: "1px solid #2a2a3e", borderRadius: "8px", fontSize: "11px" }} formatter={(value: number) => formatCompactCOP(value)} />
+            <Tooltip contentStyle={{ background: "#1a1a2e", border: "1px solid #2a2a3e", borderRadius: "8px", fontSize: "11px" }} formatter={(value) => formatCompactCOP(Array.isArray(value) ? Number(value[0] ?? 0) : Number(value ?? 0))} />
             <Bar dataKey="previous" fill="#2a2a3e" radius={[3, 3, 0, 0]} />
             <Bar dataKey="current" fill="#00e68a" radius={[3, 3, 0, 0]} />
           </BarChart>

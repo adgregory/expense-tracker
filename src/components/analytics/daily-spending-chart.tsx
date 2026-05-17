@@ -30,7 +30,7 @@ export function DailySpendingChart() {
             </defs>
             <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: "#55556a" }} interval={3} />
             <YAxis hide />
-            <Tooltip contentStyle={{ background: "#1a1a2e", border: "1px solid #2a2a3e", borderRadius: "8px", fontSize: "11px" }} formatter={(value: number) => [formatCompactCOP(value), "Spent"]} labelFormatter={(label) => `May ${label}`} />
+            <Tooltip contentStyle={{ background: "#1a1a2e", border: "1px solid #2a2a3e", borderRadius: "8px", fontSize: "11px" }} formatter={(value) => [formatCompactCOP(Array.isArray(value) ? Number(value[0] ?? 0) : Number(value ?? 0)), "Spent"]} labelFormatter={(label) => `May ${label}`} />
             <ReferenceLine y={dailyLimit} stroke="#ff4d6a" strokeDasharray="4 4" strokeOpacity={0.6} />
             <Area type="monotone" dataKey="amount" stroke="#00e68a" strokeWidth={2} fill="url(#areaGradient)" />
           </AreaChart>
