@@ -2,7 +2,7 @@
 
 import { useApp } from "@/lib/context/use-app";
 import { formatCOP, cn } from "@/lib/utils";
-import { X, PauseCircle } from "lucide-react";
+import { X, PauseCircle, PlayCircle, CheckCircle } from "lucide-react";
 
 const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
   arrived: { label: "Arrived", color: "text-[var(--color-green)]", bg: "bg-[var(--color-green-dim)]" },
@@ -50,19 +50,51 @@ export function RecurringSection() {
                   {config.label}
                 </span>
                 {status === "pending" && monthData && (
+                  <>
+                    <button
+                      onClick={async () => {
+                        await fetch(`/api/recurring/${monthData.id}`, {
+                          method: "PATCH",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ status: "arrived" }),
+                        });
+                        await refreshData();
+                      }}
+                      className="text-muted-foreground hover:text-[var(--color-green)] p-1"
+                      title="Mark arrived"
+                    >
+                      <CheckCircle className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      onClick={async () => {
+                        await fetch(`/api/recurring/${monthData.id}`, {
+                          method: "PATCH",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ status: "snoozed" }),
+                        });
+                        await refreshData();
+                      }}
+                      className="text-muted-foreground hover:text-foreground p-1"
+                      title="Snooze"
+                    >
+                      <PauseCircle className="h-3.5 w-3.5" />
+                    </button>
+                  </>
+                )}
+                {status === "snoozed" && monthData && (
                   <button
                     onClick={async () => {
                       await fetch(`/api/recurring/${monthData.id}`, {
                         method: "PATCH",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ status: "snoozed" }),
+                        body: JSON.stringify({ status: "pending" }),
                       });
                       await refreshData();
                     }}
-                    className="text-muted-foreground hover:text-foreground p-1"
-                    title="Snooze"
+                    className="text-muted-foreground hover:text-[var(--color-yellow)] p-1"
+                    title="Reactivate"
                   >
-                    <PauseCircle className="h-3.5 w-3.5" />
+                    <PlayCircle className="h-3.5 w-3.5" />
                   </button>
                 )}
                 {monthData && (
