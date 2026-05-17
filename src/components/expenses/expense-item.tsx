@@ -3,6 +3,12 @@
 import { Expense } from "@/lib/types";
 import { formatCOP } from "@/lib/utils";
 
+const bankLabels: Record<string, string> = {
+  banco_de_bogota: "BdB",
+  bancolombia: "Banc",
+  bofa: "BofA",
+};
+
 interface ExpenseItemProps {
   expense: Expense;
   onCategorize?: (expense: Expense) => void;
@@ -37,6 +43,9 @@ export function ExpenseItem({ expense, onCategorize }: ExpenseItemProps) {
         ) : (
           <p className="text-[11px] text-muted-foreground mt-0.5">{cat?.name}</p>
         )}
+        <span className="text-[9px] text-muted-foreground ml-1">
+          {bankLabels[expense.bank] || expense.bank}
+        </span>
       </div>
       <div className="text-right">
         <p className="text-sm font-semibold">-{formatCOP(expense.amount)}</p>

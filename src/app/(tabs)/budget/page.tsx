@@ -4,6 +4,7 @@ import { useApp } from "@/lib/context/use-app";
 import { SpendingLimitCard } from "@/components/budget/spending-limit-card";
 import { IncomeSection } from "@/components/budget/income-section";
 import { ObligationsSection } from "@/components/budget/obligations-section";
+import { RecurringSection } from "@/components/budget/recurring-section";
 import { BudgetSummary } from "@/components/budget/budget-summary";
 
 export default function BudgetPage() {
@@ -25,6 +26,9 @@ export default function BudgetPage() {
       <div className="mb-5"><SpendingLimitCard /></div>
       <div className="mb-5"><IncomeSection /></div>
       <div className="mb-5"><ObligationsSection /></div>
+      <div className="mb-5">
+        <RecurringSection />
+      </div>
       <BudgetSummary />
     </div>
   );

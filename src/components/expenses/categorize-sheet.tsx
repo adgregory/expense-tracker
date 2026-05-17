@@ -18,14 +18,16 @@ export function CategorizeSheet({ expense, open, onClose }: CategorizeSheetProps
   const { categories, categorizeExpense, addCategory } = useApp();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [remember, setRemember] = useState(true);
+  const [isRecurring, setIsRecurring] = useState(false);
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryIcon, setNewCategoryIcon] = useState("📦");
 
   const handleConfirm = async () => {
     if (!expense || !selectedCategory) return;
-    await categorizeExpense(expense.id, selectedCategory, remember);
+    await categorizeExpense(expense.id, selectedCategory, remember, isRecurring);
     setSelectedCategory(null);
+    setIsRecurring(false);
     setShowNewCategory(false);
     setNewCategoryName("");
     onClose();
@@ -95,6 +97,25 @@ export function CategorizeSheet({ expense, open, onClose }: CategorizeSheetProps
             className={cn("w-11 h-6 rounded-full relative transition-colors", remember ? "bg-[var(--color-green)] shadow-[0_0_8px_var(--color-green-dim)]" : "bg-border")}
           >
             <div className={cn("absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform", remember ? "right-0.5" : "left-0.5")} />
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between p-3 rounded-xl bg-card mb-4">
+          <div>
+            <p className="text-[13px] font-medium">Recurring expense</p>
+            <p className="text-[10px] text-muted-foreground">Track monthly arrival</p>
+          </div>
+          <button
+            onClick={() => setIsRecurring(!isRecurring)}
+            className={cn(
+              "w-11 h-6 rounded-full relative transition-colors",
+              isRecurring ? "bg-[var(--color-blue)] shadow-[0_0_8px_var(--color-blue-dim)]" : "bg-border"
+            )}
+          >
+            <div className={cn(
+              "absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform",
+              isRecurring ? "right-0.5" : "left-0.5"
+            )} />
           </button>
         </div>
 
