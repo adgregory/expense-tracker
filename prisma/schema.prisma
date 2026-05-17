@@ -1,0 +1,119 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Expense {
+  id                 String    @id @default(cuid())
+  merchantName       String
+  merchantNormalized String
+  amount             Int
+  categoryId         String?
+  category           Category? @relation(fields: [categoryId], references: [id])
+  bank               String
+  cardLast4          String
+  date               String
+  time               String
+  rawSms             String
+  isRecurring        Boolean   @default(false)
+  createdAt          DateTime  @default(now())
+
+  recurringMonth RecurringExpenseMonth?
+
+  @@index([date])
+  @@index([merchantNormalized])
+}
+
+model Category {
+  id    String @id @default(cuid())
+  name  String @unique
+  icon  String
+  color String
+
+  expenses         Expense[]
+  merchantMappings MerchantMapping[]
+}
+
+model MerchantMapping {
+  id          String   @id @default(cuid())
+  pattern     String   @unique
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
+  isRecurring Boolean  @default(false)
+
+  recurringExpense RecurringExpense?
+}
+
+model RecurringExpense {
+  id                String          @id @default(cuid())
+  merchantMappingId String          @unique
+  merchantMapping   MerchantMapping @relation(fields: [merchantMappingId], references: [id])
+  expectedAmount    Int?
+  label             String?
+
+  months RecurringExpenseMonth[]
+}
+
+model RecurringExpenseMonth {
+  id                 String           @id @default(cuid())
+  recurringExpenseId String
+  recurringExpense   RecurringExpense @relation(fields: [recurringExpenseId], references: [id])
+  month              String
+  status             String           @default("pending")
+  expenseId          String?          @unique
+  expense            Expense?         @relation(fields: [expenseId], references: [id])
+
+  @@unique([recurringExpenseId, month])
+}
+
+model BudgetMonth {
+  id            String @id @default(cuid())
+  month         String @unique
+  spendingLimit Int    @default(0)
+
+  incomes     Income[]
+  obligations Obligation[]
+}
+
+model Income {
+  id            String      @id @default(cuid())
+  budgetMonthId String
+  budgetMonth   BudgetMonth @relation(fields: [budgetMonthId], references: [id])
+  source        String
+  amount        Int
+  date          String
+}
+
+model Obligation {
+  id            String      @id @default(cuid())
+  budgetMonthId String
+  budgetMonth   BudgetMonth @relation(fields: [budgetMonthId], references: [id])
+  name          String
+  amount        Int
+  dueDate       String
+  paid          Boolean     @default(false)
+  recurring     Boolean     @default(false)
+}
+
+model Investment {
+  id                  String                  @id @default(cuid())
+  assetName           String
+  assetType           String
+  currentValuePerUnit Float
+  transactions        InvestmentTransaction[]
+}
+
+model InvestmentTransaction {
+  id           String     @id @default(cuid())
+  investmentId String
+  investment   Investment @relation(fields: [investmentId], references: [id])
+  type         String
+  quantity     Float
+  pricePerUnit Float
+  date         String
+  notes        String?
+}
