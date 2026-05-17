@@ -22,20 +22,18 @@ export function CategorizeSheet({ expense, open, onClose }: CategorizeSheetProps
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryIcon, setNewCategoryIcon] = useState("📦");
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!expense || !selectedCategory) return;
-    categorizeExpense(expense.id, selectedCategory, remember);
+    await categorizeExpense(expense.id, selectedCategory, remember);
     setSelectedCategory(null);
     setShowNewCategory(false);
     setNewCategoryName("");
     onClose();
   };
 
-  const handleCreateCategory = () => {
+  const handleCreateCategory = async () => {
     if (!newCategoryName.trim()) return;
-    addCategory(newCategoryName.trim(), newCategoryIcon, "cyan");
-    const newId = newCategoryName.trim().toLowerCase().replace(/\s+/g, "-");
-    setSelectedCategory(newId);
+    await addCategory(newCategoryName.trim(), newCategoryIcon, "cyan");
     setShowNewCategory(false);
     setNewCategoryName("");
   };

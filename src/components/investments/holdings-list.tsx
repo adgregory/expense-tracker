@@ -24,7 +24,8 @@ export function HoldingsList() {
   return (
     <div className="space-y-2">
       {investments.map((inv) => {
-        const currentValue = inv.quantity * inv.currentValuePerUnit;
+        const quantity = inv.transactions.reduce((q, t) => q + (t.type === "buy" ? t.quantity : -t.quantity), 0);
+        const currentValue = quantity * inv.currentValuePerUnit;
         const totalCost = inv.transactions.filter((t) => t.type === "buy").reduce((sum, t) => sum + t.quantity * t.pricePerUnit, 0);
         const gain = currentValue - totalCost;
         const percentGain = totalCost > 0 ? ((gain / totalCost) * 100).toFixed(1) : "0";
@@ -38,7 +39,7 @@ export function HoldingsList() {
                 <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-lg ${colorMap[color]}`}>{icon}</div>
                 <div>
                   <p className="text-sm font-medium">{inv.assetName}</p>
-                  <p className="text-[11px] text-muted-foreground">{inv.quantity} {inv.assetType === "crypto" ? inv.assetName.substring(0, 3).toUpperCase() : "units"}</p>
+                  <p className="text-[11px] text-muted-foreground">{quantity} {inv.assetType === "crypto" ? inv.assetName.substring(0, 3).toUpperCase() : "units"}</p>
                 </div>
               </div>
               <div className="text-right">

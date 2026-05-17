@@ -1,16 +1,15 @@
 "use client";
 
-import { Expense, Category } from "@/lib/types";
+import { Expense } from "@/lib/types";
 import { ExpenseItem } from "./expense-item";
 import { formatDate } from "@/lib/utils";
 
 interface ExpenseListProps {
   expenses: Expense[];
-  categories: Category[];
   onCategorize: (expense: Expense) => void;
 }
 
-export function ExpenseList({ expenses, categories, onCategorize }: ExpenseListProps) {
+export function ExpenseList({ expenses, onCategorize }: ExpenseListProps) {
   const grouped = expenses.reduce<Record<string, Expense[]>>((acc, expense) => {
     if (!acc[expense.date]) acc[expense.date] = [];
     acc[expense.date].push(expense);
@@ -31,7 +30,7 @@ export function ExpenseList({ expenses, categories, onCategorize }: ExpenseListP
             {formatDate(date)} — {date.split("-").reverse().slice(0, 2).join("/")}
           </p>
           {grouped[date].map((expense) => (
-            <ExpenseItem key={expense.id} expense={expense} categories={categories} onCategorize={onCategorize} />
+            <ExpenseItem key={expense.id} expense={expense} onCategorize={onCategorize} />
           ))}
         </div>
       ))}

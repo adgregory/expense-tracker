@@ -11,14 +11,18 @@ interface Insight {
 
 export function InsightCards() {
   const { expenses, budget } = useApp();
+
+  if (!budget) return null;
+
   const totalSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
   const remaining = budget.spendingLimit - totalSpent;
   const daysLeft = getDaysRemainingInMonth();
 
   const insights: Insight[] = [];
 
-  const deliveryTotal = expenses.filter((e) => e.category === "delivery").reduce((sum, e) => sum + e.amount, 0);
-  const deliveryCount = expenses.filter((e) => e.category === "delivery").length;
+  const deliveryExpenses = expenses.filter((e) => e.category?.name === "Delivery");
+  const deliveryTotal = deliveryExpenses.reduce((sum, e) => sum + e.amount, 0);
+  const deliveryCount = deliveryExpenses.length;
   if (deliveryTotal > 200000) {
     insights.push({ icon: "📈", text: `You've spent ${formatCompactCOP(deliveryTotal)} on delivery across ${deliveryCount} orders this month.`, type: "info" });
   }

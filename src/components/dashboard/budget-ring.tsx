@@ -6,6 +6,8 @@ import { formatCOP, getDaysRemainingInMonth } from "@/lib/utils";
 export function BudgetRing() {
   const { expenses, budget } = useApp();
 
+  if (!budget) return null;
+
   const totalSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
   const remaining = budget.spendingLimit - totalSpent;
   const percentage = Math.max(0, Math.min(100, (remaining / budget.spendingLimit) * 100));

@@ -7,7 +7,8 @@ export function TopMerchants() {
   const { expenses } = useApp();
 
   const merchantTotals = expenses.reduce<Record<string, number>>((acc, e) => {
-    acc[e.merchantName] = (acc[e.merchantName] || 0) + e.amount;
+    const key = e.merchantNormalized || e.merchantName;
+    acc[key] = (acc[key] || 0) + e.amount;
     return acc;
   }, {});
 

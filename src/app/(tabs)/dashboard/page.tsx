@@ -1,5 +1,6 @@
 "use client";
 
+import { useApp } from "@/lib/context/use-app";
 import { BudgetRing } from "@/components/dashboard/budget-ring";
 import { QuickStats } from "@/components/dashboard/quick-stats";
 import { MerchantAlert } from "@/components/dashboard/merchant-alert";
@@ -7,6 +8,10 @@ import { WeeklyChart } from "@/components/dashboard/weekly-chart";
 import { RecentExpenses } from "@/components/dashboard/recent-expenses";
 
 export default function DashboardPage() {
+  const { loading } = useApp();
+
+  if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><p className="text-muted-foreground">Loading...</p></div>;
+
   return (
     <div className="px-5 py-4 max-w-2xl mx-auto">
       <div className="flex items-center justify-between mb-5">

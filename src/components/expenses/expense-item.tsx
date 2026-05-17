@@ -1,11 +1,10 @@
 "use client";
 
-import { Expense, Category } from "@/lib/types";
+import { Expense } from "@/lib/types";
 import { formatCOP } from "@/lib/utils";
 
 interface ExpenseItemProps {
   expense: Expense;
-  categories: Category[];
   onCategorize?: (expense: Expense) => void;
 }
 
@@ -19,8 +18,8 @@ const colorMap: Record<string, string> = {
   cyan: "bg-[var(--color-cyan-dim)]",
 };
 
-export function ExpenseItem({ expense, categories, onCategorize }: ExpenseItemProps) {
-  const cat = categories.find((c) => c.id === expense.category);
+export function ExpenseItem({ expense, onCategorize }: ExpenseItemProps) {
+  const cat = expense.category;
   const icon = cat ? cat.icon : "❓";
   const color = cat ? cat.color : "orange";
   const isUncategorized = !expense.category;

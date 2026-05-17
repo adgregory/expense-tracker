@@ -1,9 +1,17 @@
 "use client";
 
-import { dailySpending } from "@/lib/mock-data";
+import { useApp } from "@/lib/context/use-app";
 
 export function WeeklyChart() {
-  const last7 = dailySpending.slice(-7);
+  const { expenses } = useApp();
+
+  const dailyMap = new Map<string, number>();
+  expenses.forEach(e => dailyMap.set(e.date, (dailyMap.get(e.date) || 0) + e.amount));
+  const allDays = Array.from(dailyMap.entries())
+    .map(([date, amount]) => ({ date, amount }))
+    .sort((a, b) => a.date.localeCompare(b.date));
+  const last7 = allDays.slice(-7);
+
   const maxAmount = Math.max(...last7.map((d) => d.amount), 1);
   const dayLabels = ["L", "M", "M", "J", "V", "S", "D"];
 

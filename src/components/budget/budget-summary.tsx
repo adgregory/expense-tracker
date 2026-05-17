@@ -6,6 +6,8 @@ import { formatCOP } from "@/lib/utils";
 export function BudgetSummary() {
   const { budget } = useApp();
 
+  if (!budget) return null;
+
   const totalIncome = budget.incomes.reduce((sum, i) => sum + i.amount, 0);
   const totalObligations = budget.obligations.reduce((sum, o) => sum + o.amount, 0);
   const savingsTarget = totalIncome - totalObligations - budget.spendingLimit;

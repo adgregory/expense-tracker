@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useApp } from "@/lib/context/use-app";
 import { TimeRange } from "@/lib/types";
 import { TimeRangeTabs } from "@/components/analytics/time-range-tabs";
 import { CategoryDonut } from "@/components/analytics/category-donut";
@@ -10,7 +11,10 @@ import { TopMerchants } from "@/components/analytics/top-merchants";
 import { InsightCards } from "@/components/analytics/insight-cards";
 
 export default function AnalyticsPage() {
+  const { loading } = useApp();
   const [timeRange, setTimeRange] = useState<TimeRange>("month");
+
+  if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><p className="text-muted-foreground">Loading...</p></div>;
 
   return (
     <div className="px-5 py-4 max-w-2xl mx-auto">

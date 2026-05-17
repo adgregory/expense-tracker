@@ -1,16 +1,25 @@
 "use client";
 
-import { dailySpending } from "@/lib/mock-data";
 import { useApp } from "@/lib/context/use-app";
 import { formatCompactCOP, getDaysRemainingInMonth } from "@/lib/utils";
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, ReferenceLine, Tooltip } from "recharts";
 
 export function DailySpendingChart() {
   const { budget, expenses } = useApp();
+
+  if (!budget) return null;
+
   const totalSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
   const remaining = budget.spendingLimit - totalSpent;
   const daysLeft = getDaysRemainingInMonth();
   const dailyLimit = daysLeft > 0 ? Math.round(remaining / daysLeft) : 0;
+
+  const dailyMap = new Map<string, number>();
+  expenses.forEach(e => dailyMap.set(e.date, (dailyMap.get(e.date) || 0) + e.amount));
+  const dailySpending = Array.from(dailyMap.entries())
+    .map(([date, amount]) => ({ date, amount }))
+    .sort((a, b) => a.date.localeCompare(b.date));
+
   const avgSpending = dailySpending.length > 0 ? Math.round(dailySpending.reduce((sum, d) => sum + d.amount, 0) / dailySpending.length) : 0;
 
   const data = dailySpending.map((d) => ({ ...d, label: d.date.split("-")[2] }));
@@ -30,7 +39,7 @@ export function DailySpendingChart() {
             </defs>
             <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: "#55556a" }} interval={3} />
             <YAxis hide />
-            <Tooltip contentStyle={{ background: "#1a1a2e", border: "1px solid #2a2a3e", borderRadius: "8px", fontSize: "11px" }} formatter={(value) => [formatCompactCOP(Array.isArray(value) ? Number(value[0] ?? 0) : Number(value ?? 0)), "Spent"]} labelFormatter={(label) => `May ${label}`} />
+            <Tooltip contentStyle={{ background: "#1a1a2e", border: "1px solid #2a2a3e", borderRadius: "8px", fontSize: "11px" }} formatter={(value) => [formatCompactCOP(Array.isArray(value) ? Number(value[0] ?? 0) : Number(value ?? 0)), "Spent"]} labelFormatter={(label) => `Day ${label}`} />
             <ReferenceLine y={dailyLimit} stroke="#ff4d6a" strokeDasharray="4 4" strokeOpacity={0.6} />
             <Area type="monotone" dataKey="amount" stroke="#00e68a" strokeWidth={2} fill="url(#areaGradient)" />
           </AreaChart>

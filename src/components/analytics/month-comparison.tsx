@@ -17,7 +17,7 @@ export function MonthComparison() {
 
   const data = categories
     .map((cat) => {
-      const current = expenses.filter((e) => e.category === cat.id).reduce((sum, e) => sum + e.amount, 0);
+      const current = expenses.filter((e) => e.categoryId === cat.id).reduce((sum, e) => sum + e.amount, 0);
       const previous = previousMonthByCategory[cat.id] || 0;
       if (current === 0 && previous === 0) return null;
       return { name: cat.icon, current, previous };

@@ -12,6 +12,8 @@ export function IncomeSection() {
   const [source, setSource] = useState("");
   const [amount, setAmount] = useState("");
 
+  if (!budget) return null;
+
   const totalIncome = budget.incomes.reduce((sum, i) => sum + i.amount, 0);
 
   const handleAdd = () => {

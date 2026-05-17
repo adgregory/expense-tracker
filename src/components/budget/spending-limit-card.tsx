@@ -11,6 +11,8 @@ export function SpendingLimitCard() {
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState("");
 
+  if (!budget) return null;
+
   const totalSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
   const remaining = budget.spendingLimit - totalSpent;
   const daysLeft = getDaysRemainingInMonth();

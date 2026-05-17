@@ -9,7 +9,7 @@ import { ExpenseList } from "@/components/expenses/expense-list";
 import { CategorizeSheet } from "@/components/expenses/categorize-sheet";
 
 export default function ExpensesPage() {
-  const { expenses, categories } = useApp();
+  const { expenses, loading } = useApp();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [categorizeTarget, setCategorizeTarget] = useState<Expense | null>(null);
@@ -19,14 +19,16 @@ export default function ExpensesPage() {
     if (filter === "uncategorized") {
       result = result.filter((e) => e.category === null);
     } else if (filter !== "all") {
-      result = result.filter((e) => e.category === filter);
+      result = result.filter((e) => e.categoryId === filter);
     }
     if (search.trim()) {
       const q = search.toLowerCase();
-      result = result.filter((e) => e.merchantName.toLowerCase().includes(q) || (e.category && e.category.toLowerCase().includes(q)));
+      result = result.filter((e) => e.merchantName.toLowerCase().includes(q) || (e.category && e.category.name.toLowerCase().includes(q)));
     }
     return result;
   }, [expenses, filter, search]);
+
+  if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><p className="text-muted-foreground">Loading...</p></div>;
 
   return (
     <div className="px-5 py-4 max-w-2xl mx-auto">
@@ -36,7 +38,7 @@ export default function ExpensesPage() {
       </div>
       <div className="mb-3"><SearchBar value={search} onChange={setSearch} /></div>
       <FilterPills selected={filter} onSelect={setFilter} />
-      <ExpenseList expenses={filtered} categories={categories} onCategorize={setCategorizeTarget} />
+      <ExpenseList expenses={filtered} onCategorize={setCategorizeTarget} />
       <CategorizeSheet expense={categorizeTarget} open={categorizeTarget !== null} onClose={() => setCategorizeTarget(null)} />
     </div>
   );

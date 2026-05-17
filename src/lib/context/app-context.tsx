@@ -1,143 +1,158 @@
 "use client";
 
-import React, { createContext, useState, useCallback } from "react";
+import React, { createContext, useState, useCallback, useEffect } from "react";
 import {
   Expense,
   Category,
-  MerchantMapping,
   BudgetMonth,
   Investment,
+  RecurringExpense,
   Income,
   Obligation,
 } from "@/lib/types";
-import {
-  expenses as initialExpenses,
-  categories as initialCategories,
-  merchantMappings as initialMappings,
-  currentBudget as initialBudget,
-  investments as initialInvestments,
-} from "@/lib/mock-data";
+import { getCurrentMonth } from "@/lib/utils";
 
 export interface AppState {
   expenses: Expense[];
   categories: Category[];
-  merchantMappings: MerchantMapping[];
-  budget: BudgetMonth;
+  budget: BudgetMonth | null;
   investments: Investment[];
-  categorizeExpense: (expenseId: string, categoryId: string, remember: boolean) => void;
-  addCategory: (name: string, icon: string, color: string) => void;
-  updateSpendingLimit: (amount: number) => void;
-  addIncome: (income: Omit<Income, "id">) => void;
-  addObligation: (obligation: Omit<Obligation, "id">) => void;
-  toggleObligationPaid: (id: string) => void;
+  recurring: RecurringExpense[];
+  currentMonth: string;
+  loading: boolean;
+  setCurrentMonth: (month: string) => void;
+  categorizeExpense: (expenseId: string, categoryId: string, remember: boolean, isRecurring?: boolean) => Promise<void>;
+  addCategory: (name: string, icon: string, color: string) => Promise<void>;
+  updateSpendingLimit: (amount: number) => Promise<void>;
+  addIncome: (income: Omit<Income, "id">) => Promise<void>;
+  addObligation: (obligation: Omit<Obligation, "id" | "paid">) => Promise<void>;
+  toggleObligationPaid: (id: string) => Promise<void>;
   addInvestmentTransaction: (
     investmentId: string,
     transaction: { type: "buy" | "sell"; quantity: number; pricePerUnit: number; date: string; notes?: string }
-  ) => void;
+  ) => Promise<void>;
+  refreshData: () => Promise<void>;
 }
 
 export const AppContext = createContext<AppState | null>(null);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
-  const [categories, setCategories] = useState<Category[]>(initialCategories);
-  const [merchantMappings, setMerchantMappings] = useState<MerchantMapping[]>(initialMappings);
-  const [budget, setBudget] = useState<BudgetMonth>(initialBudget);
-  const [investments, setInvestments] = useState<Investment[]>(initialInvestments);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [budget, setBudget] = useState<BudgetMonth | null>(null);
+  const [investments, setInvestments] = useState<Investment[]>([]);
+  const [recurring, setRecurring] = useState<RecurringExpense[]>([]);
+  const [currentMonth, setCurrentMonth] = useState(getCurrentMonth());
+  const [loading, setLoading] = useState(true);
 
-  const categorizeExpense = useCallback(
-    (expenseId: string, categoryId: string, remember: boolean) => {
-      setExpenses((prev) =>
-        prev.map((e) => (e.id === expenseId ? { ...e, category: categoryId } : e))
-      );
-      if (remember) {
-        const expense = expenses.find((e) => e.id === expenseId);
-        if (expense) {
-          setMerchantMappings((prev) => [
-            ...prev,
-            { pattern: expense.merchantName.toUpperCase(), category: categoryId },
-          ]);
-        }
-      }
-    },
-    [expenses]
-  );
-
-  const addCategory = useCallback((name: string, icon: string, color: string) => {
-    const id = name.toLowerCase().replace(/\s+/g, "-");
-    setCategories((prev) => [...prev, { id, name, icon, color }]);
+  const fetchData = useCallback(async (month: string) => {
+    setLoading(true);
+    try {
+      const [expRes, catRes, budRes, invRes, recRes] = await Promise.all([
+        fetch(`/api/expenses?month=${month}`),
+        fetch(`/api/categories`),
+        fetch(`/api/budget/${month}`),
+        fetch(`/api/investments`),
+        fetch(`/api/recurring?month=${month}`),
+      ]);
+      setExpenses(await expRes.json());
+      setCategories(await catRes.json());
+      setBudget(await budRes.json());
+      setInvestments(await invRes.json());
+      setRecurring(await recRes.json());
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const updateSpendingLimit = useCallback((amount: number) => {
-    setBudget((prev) => ({ ...prev, spendingLimit: amount }));
+  useEffect(() => { fetchData(currentMonth); }, [currentMonth, fetchData]);
+
+  const refreshData = useCallback(() => fetchData(currentMonth), [currentMonth, fetchData]);
+
+  const categorizeExpense = useCallback(async (
+    expenseId: string, categoryId: string, remember: boolean, isRecurring?: boolean
+  ) => {
+    const res = await fetch(`/api/expenses/${expenseId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ categoryId, remember, isRecurring }),
+    });
+    const updated = await res.json();
+    setExpenses((prev) => prev.map((e) => (e.id === expenseId ? updated : e)));
   }, []);
 
-  const addIncome = useCallback((income: Omit<Income, "id">) => {
-    const id = `i${Date.now()}`;
-    setBudget((prev) => ({
-      ...prev,
-      incomes: [...prev.incomes, { ...income, id }],
-    }));
+  const addCategory = useCallback(async (name: string, icon: string, color: string) => {
+    const res = await fetch("/api/categories", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, icon, color }),
+    });
+    const created = await res.json();
+    setCategories((prev) => [...prev, created]);
   }, []);
 
-  const addObligation = useCallback((obligation: Omit<Obligation, "id">) => {
-    const id = `o${Date.now()}`;
-    setBudget((prev) => ({
-      ...prev,
-      obligations: [...prev.obligations, { ...obligation, id }],
-    }));
-  }, []);
+  const updateSpendingLimit = useCallback(async (amount: number) => {
+    const res = await fetch(`/api/budget/${currentMonth}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ spendingLimit: amount }),
+    });
+    setBudget(await res.json());
+  }, [currentMonth]);
 
-  const toggleObligationPaid = useCallback((id: string) => {
-    setBudget((prev) => ({
-      ...prev,
-      obligations: prev.obligations.map((o) =>
-        o.id === id ? { ...o, paid: !o.paid } : o
-      ),
-    }));
-  }, []);
+  const addIncome = useCallback(async (income: Omit<Income, "id">) => {
+    await fetch(`/api/budget/${currentMonth}/income`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(income),
+    });
+    const res = await fetch(`/api/budget/${currentMonth}`);
+    setBudget(await res.json());
+  }, [currentMonth]);
 
-  const addInvestmentTransaction = useCallback(
-    (
-      investmentId: string,
-      transaction: { type: "buy" | "sell"; quantity: number; pricePerUnit: number; date: string; notes?: string }
-    ) => {
-      const txId = `t${Date.now()}`;
-      setInvestments((prev) =>
-        prev.map((inv) => {
-          if (inv.id !== investmentId) return inv;
-          const newQty =
-            transaction.type === "buy"
-              ? inv.quantity + transaction.quantity
-              : inv.quantity - transaction.quantity;
-          return {
-            ...inv,
-            quantity: newQty,
-            transactions: [...inv.transactions, { ...transaction, id: txId }],
-          };
-        })
-      );
-    },
-    []
-  );
+  const addObligation = useCallback(async (obligation: Omit<Obligation, "id" | "paid">) => {
+    await fetch(`/api/budget/${currentMonth}/obligation`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(obligation),
+    });
+    const res = await fetch(`/api/budget/${currentMonth}`);
+    setBudget(await res.json());
+  }, [currentMonth]);
+
+  const toggleObligationPaid = useCallback(async (id: string) => {
+    const ob = budget?.obligations.find((o) => o.id === id);
+    if (!ob) return;
+    await fetch(`/api/budget/${currentMonth}/obligation/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ paid: !ob.paid }),
+    });
+    const res = await fetch(`/api/budget/${currentMonth}`);
+    setBudget(await res.json());
+  }, [budget, currentMonth]);
+
+  const addInvestmentTransaction = useCallback(async (
+    investmentId: string,
+    transaction: { type: "buy" | "sell"; quantity: number; pricePerUnit: number; date: string; notes?: string }
+  ) => {
+    await fetch(`/api/investments/${investmentId}/transaction`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(transaction),
+    });
+    const res = await fetch("/api/investments");
+    setInvestments(await res.json());
+  }, []);
 
   return (
-    <AppContext.Provider
-      value={{
-        expenses,
-        categories,
-        merchantMappings,
-        budget,
-        investments,
-        categorizeExpense,
-        addCategory,
-        updateSpendingLimit,
-        addIncome,
-        addObligation,
-        toggleObligationPaid,
-        addInvestmentTransaction,
-      }}
-    >
+    <AppContext.Provider value={{
+      expenses, categories, budget, investments, recurring,
+      currentMonth, loading, setCurrentMonth,
+      categorizeExpense, addCategory, updateSpendingLimit,
+      addIncome, addObligation, toggleObligationPaid,
+      addInvestmentTransaction, refreshData,
+    }}>
       {children}
     </AppContext.Provider>
   );

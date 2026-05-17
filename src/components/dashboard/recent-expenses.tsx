@@ -15,13 +15,12 @@ const colorMap: Record<string, string> = {
 };
 
 export function RecentExpenses() {
-  const { expenses, categories } = useApp();
+  const { expenses } = useApp();
   const recent = expenses.slice(0, 5);
 
-  const getCategoryInfo = (categoryId: string | null) => {
-    if (!categoryId) return { icon: "❓", color: "orange" };
-    const cat = categories.find((c) => c.id === categoryId);
-    return cat ? { icon: cat.icon, color: cat.color } : { icon: "❓", color: "orange" };
+  const getCategoryInfo = (expense: { category: { icon: string; color: string } | null }) => {
+    if (!expense.category) return { icon: "❓", color: "orange" };
+    return { icon: expense.category.icon, color: expense.category.color };
   };
 
   const getTimeAgo = (date: string, time: string): string => {
@@ -44,14 +43,13 @@ export function RecentExpenses() {
       </div>
       <div className="space-y-0">
         {recent.map((expense) => {
-          const { icon, color } = getCategoryInfo(expense.category);
-          const cat = categories.find((c) => c.id === expense.category);
+          const { icon, color } = getCategoryInfo(expense);
           return (
             <div key={expense.id} className="flex items-center gap-3 py-3 border-b border-border last:border-0">
               <div className={`flex h-[38px] w-[38px] items-center justify-center rounded-[10px] text-base flex-shrink-0 ${colorMap[color]}`}>{icon}</div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{expense.merchantName}</p>
-                <p className="text-[11px] text-muted-foreground">{cat ? cat.name : "Uncategorized"}</p>
+                <p className="text-[11px] text-muted-foreground">{expense.category ? expense.category.name : "Uncategorized"}</p>
               </div>
               <div className="text-right">
                 <p className="text-sm font-semibold">-{formatCOP(expense.amount)}</p>

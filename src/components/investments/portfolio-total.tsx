@@ -6,7 +6,10 @@ import { formatCOP, formatCompactCOP } from "@/lib/utils";
 export function PortfolioTotal() {
   const { investments } = useApp();
 
-  const totalValue = investments.reduce((sum, inv) => sum + inv.quantity * inv.currentValuePerUnit, 0);
+  const totalValue = investments.reduce((sum, inv) => {
+    const qty = inv.transactions.reduce((q, t) => q + (t.type === "buy" ? t.quantity : -t.quantity), 0);
+    return sum + qty * inv.currentValuePerUnit;
+  }, 0);
   const totalCost = investments.reduce((sum, inv) => sum + inv.transactions.filter((t) => t.type === "buy").reduce((s, t) => s + t.quantity * t.pricePerUnit, 0), 0);
   const totalGain = totalValue - totalCost;
   const percentGain = totalCost > 0 ? ((totalGain / totalCost) * 100).toFixed(1) : "0";

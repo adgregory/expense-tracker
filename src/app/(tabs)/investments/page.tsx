@@ -1,13 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { useApp } from "@/lib/context/use-app";
 import { PortfolioTotal } from "@/components/investments/portfolio-total";
 import { HoldingsList } from "@/components/investments/holdings-list";
 import { InvestmentForm } from "@/components/investments/investment-form";
 import { ActivityLog } from "@/components/investments/activity-log";
 
 export default function InvestmentsPage() {
+  const { loading } = useApp();
   const [showForm, setShowForm] = useState(false);
+
+  if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><p className="text-muted-foreground">Loading...</p></div>;
 
   return (
     <div className="px-5 py-4 max-w-2xl mx-auto">

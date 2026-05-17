@@ -20,7 +20,7 @@ export function CategoryDonut() {
 
   const data = categories
     .map((cat) => {
-      const amount = expenses.filter((e) => e.category === cat.id).reduce((sum, e) => sum + e.amount, 0);
+      const amount = expenses.filter((e) => e.categoryId === cat.id).reduce((sum, e) => sum + e.amount, 0);
       return { name: cat.name, value: amount, icon: cat.icon, color: COLORS[cat.color] || "#666" };
     })
     .filter((d) => d.value > 0)
@@ -34,7 +34,7 @@ export function CategoryDonut() {
   return (
     <div className="rounded-2xl border border-border bg-card p-4">
       <h4 className="text-[13px] font-semibold mb-0.5">Category Breakdown</h4>
-      <p className="text-[11px] text-muted-foreground mb-3">May 2026 · {formatCompactCOP(totalSpent)} total</p>
+      <p className="text-[11px] text-muted-foreground mb-3">{formatCompactCOP(totalSpent)} total</p>
       <div className="flex items-center gap-4">
         <div className="w-[120px] h-[120px] flex-shrink-0">
           <ResponsiveContainer width="100%" height="100%">

@@ -6,6 +6,8 @@ import { formatCompactCOP } from "@/lib/utils";
 export function QuickStats() {
   const { expenses, budget } = useApp();
 
+  if (!budget) return null;
+
   const totalIncome = budget.incomes.reduce((sum, i) => sum + i.amount, 0);
   const txCount = expenses.length;
   const totalSpent = expenses.reduce((sum, e) => sum + e.amount, 0);

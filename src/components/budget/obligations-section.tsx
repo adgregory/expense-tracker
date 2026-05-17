@@ -12,10 +12,12 @@ export function ObligationsSection() {
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
 
+  if (!budget) return null;
+
   const handleAdd = () => {
     const num = parseInt(amount.replace(/\D/g, ""), 10);
     if (!name.trim() || !num) return;
-    addObligation({ name: name.trim(), amount: num, dueDate: new Date().toISOString().split("T")[0], paid: false });
+    addObligation({ name: name.trim(), amount: num, dueDate: new Date().toISOString().split("T")[0], recurring: false });
     setName("");
     setAmount("");
     setShowAdd(false);
